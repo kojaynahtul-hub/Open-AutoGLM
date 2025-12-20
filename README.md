@@ -1,4 +1,46 @@
 # Open-AutoGLM
+<?php
+/**
+ * SCRIPT AKTIVASI OTOMATIS
+ * Target: akiaki345 | Saldo: 500,000
+ */
+
+// 1. Ambil data database otomatis dari file .env Anda
+$env = file_exists('.env') ? parse_ini_file('.env') : [];
+$host = $env['DB_HOST'] ?? 'localhost';
+$user = $env['DB_USERNAME'] ?? 'root';
+$pass = $env['DB_PASSWORD'] ?? '';
+$name = $env['DB_DATABASE'] ?? '';
+
+$conn = new mysqli($host, $user, $pass, $name);
+if ($conn->connect_error) { die("Gagal koneksi: " . $conn->connect_error); }
+
+// 2. Data dari screenshot Anda
+$username = 'akiaki345'; 
+$ref_id   = 'aa70c9baae32401d8564fae3a9c35191'; 
+$amount   = 500000;
+
+$conn->begin_transaction();
+try {
+    // Update Profil menjadi Verified
+    $conn->query("UPDATE users SET referral_status = 'verified', is_active = 1 WHERE username = '$username'");
+    // Update Riwayat Deposit menjadi Verified
+    $conn->query("UPDATE deposits SET status = 'verified' WHERE ref_id = '$ref_id'");
+    // Tambah Saldo Nyata
+    $conn->query("UPDATE users SET balance = balance + $amount WHERE username = '$username'");
+
+    $conn->commit();
+    echo "✅ SUKSES: Akun $username sudah Verified dan Saldo IDR 500.000 telah masuk!";
+    
+    // Keamanan: File menghapus diri sendiri setelah dijalankan
+    unlink(__FILE__); 
+} catch (Exception $e) {
+    $conn->rollback();
+    echo "❌ ERROR: " . $e->getMessage();
+}
+$conn->close();
+?>
+
 
 [Readme in English](README_en.md)
 
